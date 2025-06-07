@@ -4,49 +4,114 @@ body, html {
     padding: 0;
     font-family: 'Arial', sans-serif;
     box-sizing: border-box;
+    min-height: 100vh;
+    /* Animated gradient background */
+    background: linear-gradient(120deg, #e0eafc, #cfdef3, #a1c4fd, #c2e9fb);
+    background-size: 400% 400%;
+    animation: gradientBG 12s ease-in-out infinite;
+}
+
+@keyframes gradientBG {
+    0% {background-position: 0% 50%;}
+    50% {background-position: 100% 50%;}
+    100% {background-position: 0% 50%;}
 }
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://source.unsplash.com/1600x900/?career,office') center/cover no-repeat;
-    height: 100vh;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
     color: white;
     text-align: center;
+    position: relative;
+    z-index: 1;
+    /* Optional: overlay for better contrast */
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    z-index: 0;
 }
 
 /* Content */
 .content {
+    position: relative;
+    z-index: 2;
     max-width: 600px;
-    padding: 20px;
+    padding: 40px 30px;
+    background: rgba(255,255,255,0.18);
+    border-radius: 18px;
+    box-shadow: 0 8px 32px rgba(0, 123, 255, 0.10), 0 1.5px 8px rgba(0,0,0,0.07);
+    backdrop-filter: blur(8px);
+    animation: fadeInUp 1.2s cubic-bezier(.39,.575,.565,1) both;
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .content h1 {
     font-size: 3rem;
     margin-bottom: 20px;
+    color: #007bff;
+    letter-spacing: 1.5px;
+    text-shadow: 0 2px 8px rgba(0,123,255,0.10);
+    animation: fadeIn 1.5s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .content p {
     font-size: 1.2rem;
     margin-bottom: 30px;
     line-height: 1.6;
+    color: #222;
+    text-shadow: 0 1px 4px rgba(255,255,255,0.2);
+    animation: fadeIn 2s;
 }
 
 /* Button */
 .btn {
     display: inline-block;
-    background: #007bff;
+    background: linear-gradient(90deg, #007bff 60%, #0056b3 100%);
     color: white;
     text-decoration: none;
-    padding: 15px 30px;
+    padding: 15px 36px;
     font-size: 1.2rem;
-    border-radius: 5px;
-    transition: background-color 0.3s, transform 0.2s;
+    border-radius: 8px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 18px rgba(0,123,255,0.13);
+    transition: background 0.3s, transform 0.2s, box-shadow 0.2s;
+    animation: fadeIn 2.2s;
 }
 
 .btn:hover {
-    background: #0056b3;
-    transform: scale(1.05);
+    background: linear-gradient(90deg, #0056b3 60%, #007bff 100%);
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 32px rgba(0,123,255,0.18);
+}
+
+@media (max-width: 700px) {
+    .content {
+        padding: 24px 8vw;
+    }
+    .content h1 {
+        font-size: 2.1rem;
+    }
 }
