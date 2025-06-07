@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login or Sign Up</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="login-container">
+        <h2 class="login-title">Welcome to Chat Room</h2>
+        <div id="auth-section">
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <div class="auth-btns">
+                <button id="signup-btn">Sign Up</button>
+                <button id="login-btn">Login</button>
+            </div>
+            <div id="auth-message"></div>
+        </div>
+    </div>
+    <script>
+    // Minimal login/signup logic for login.html
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const signupBtn = document.getElementById('signup-btn');
+    const loginBtn = document.getElementById('login-btn');
+    const authMsg = document.getElementById('auth-message');
+    const usersKey = "chat_users";
+
+    function getUsers() {
+        return JSON.parse(localStorage.getItem(usersKey) || "{}");
+    }
+    function setUsers(users) {
+        localStorage.setItem(usersKey, JSON.stringify(users));
+    }
+
+    signupBtn.onclick = () => {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+        if (!username || !password) {
+            authMsg.textContent = "Username and password required.";
+            return;
+        }
+        let users = getUsers();
+        if (users[username]) {
+            authMsg.textContent = "Username already exists.";
+            return;
+        }
+        users[username] = password;
+        setUsers(users);
+        authMsg.textContent = "Account created! Please log in.";
+    };
+
+    loginBtn.onclick = () => {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+        let users = getUsers();
+        if (users[username] && users[username] === password) {
+            localStorage.setItem("chat_current_user", username);
+            window.location.href = "chat.html";
+        } else {
+            authMsg.textContent = "Invalid username or password.";
+        }
+    };
+
+    // Auto-redirect if already logged in
+    if (localStorage.getItem("chat_current_user")) {
+        window.location.href = "chat.html";
+    }
+    </script>
+</body>
+</html>

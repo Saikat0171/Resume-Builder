@@ -8,33 +8,35 @@
 </head>
 <body>
     <div class="chat-container">
-        <div id="auth-section">
-            <h2 class="chat-title">Welcome to Chat Room</h2>
-            <input type="text" id="username" placeholder="Username">
-            <input type="password" id="password" placeholder="Password">
-            <div class="auth-btns">
-                <button id="signup-btn">Sign Up</button>
-                <button id="login-btn">Login</button>
-            </div>
-            <div id="auth-message"></div>
-        </div>
-        <div id="chat-section" style="display:none;">
-            <div class="chat-header">
-                <span><b>Logged in as:</b> <span id="current-user"></span></span>
-                <button id="logout-btn">Logout</button>
-            </div>
-            <div class="user-list-row">
-                <label for="user-list"><b>Chat with:</b></label>
-                <select id="user-list"></select>
-            </div>
-            <div id="chat-messages"></div>
-            <div class="chat-input-row">
-                <input type="text" id="chat-input" placeholder="Type a message...">
-                <button id="send-btn">Send</button>
-            </div>
+        <div class="chat-layout" id="chat-section">
+            <aside class="profile-sidebar">
+                <div id="profile-sidebar-content">
+                    <div id="sidebar-pic"></div>
+                    <div id="sidebar-name"></div>
+                    <div id="sidebar-age"></div>
+                    <div id="sidebar-location"></div>
+                    <a href="profile.html" id="edit-profile-btn" class="edit-profile-link">Edit Profile</a>
+                </div>
+            </aside>
+            <main class="chat-main">
+                <div class="chat-header">
+                    <span><b>Logged in as:</b> <span id="current-user"></span></span>
+                    <button id="logout-btn" type="button"><span style="font-size:1.2em;vertical-align:middle;">🚪</span> Logout</button>
+                </div>
+                <div class="user-list-row">
+                    <label for="user-list"><b>Chat with:</b></label>
+                    <select id="user-list"></select>
+                </div>
+                <div id="chat-messages"></div>
+                <div class="chat-input-row">
+                    <input type="text" id="chat-input" placeholder="Type a message...">
+                    <button id="send-btn" type="button">Send</button>
+                </div>
+            </main>
         </div>
         <a href="../home.html" class="back-link">← Back to Home</a>
     </div>
+
     <script src="chat.js"></script>
 </body>
 </html>

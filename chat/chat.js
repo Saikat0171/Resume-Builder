@@ -1,155 +1,186 @@
-// Simple localStorage-based chat and auth
+document.addEventListener("DOMContentLoaded", () => {
+    const usersKey = "chat_users";
+    const messagesKey = "chat_messages";
+    let currentUser = localStorage.getItem("chat_current_user");
 
-const usersKey = "chat_users";
-const messagesKey = "chat_messages";
-let currentUser = null;
+    // Elements
+    const chatMessages = document.getElementById('chat-messages');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+    const userList = document.getElementById('user-list');
+    const currentUserSpan = document.getElementById('current-user');
+    const sidebarPic = document.getElementById('sidebar-pic');
+    const sidebarName = document.getElementById('sidebar-name');
+    const sidebarAge = document.getElementById('sidebar-age');
+    const sidebarLocation = document.getElementById('sidebar-location');
+    const editProfileBtn = document.getElementById('edit-profile-btn');
+    const logoutBtn = document.getElementById('logout-btn');
 
-// Elements
-const usernameInput = document.getElementById('username');
-const passwordInput = document.getElementById('password');
-const signupBtn = document.getElementById('signup-btn');
-const loginBtn = document.getElementById('login-btn');
-const logoutBtn = document.getElementById('logout-btn');
-const authMsg = document.getElementById('auth-message');
-const chatSection = document.getElementById('chat-section');
-const authSection = document.getElementById('auth-section');
-const chatMessages = document.getElementById('chat-messages');
-const chatInput = document.getElementById('chat-input');
-const sendBtn = document.getElementById('send-btn');
-const userList = document.getElementById('user-list');
-const currentUserSpan = document.getElementById('current-user');
-
-// Helper functions
-function getUsers() {
-    return JSON.parse(localStorage.getItem(usersKey) || "{}");
-}
-function setUsers(users) {
-    localStorage.setItem(usersKey, JSON.stringify(users));
-}
-function getMessages() {
-    return JSON.parse(localStorage.getItem(messagesKey) || "[]");
-}
-function setMessages(msgs) {
-    localStorage.setItem(messagesKey, JSON.stringify(msgs));
-}
-function showChat() {
-    authSection.style.display = "none";
-    chatSection.style.display = "block";
-    currentUserSpan.textContent = currentUser;
-    logoutBtn.style.display = "inline-block"; // <-- Add this line
-    loadUserList();
-    loadMessages();
-}
-function showAuth() {
-    authSection.style.display = "block";
-    chatSection.style.display = "none";
-    authMsg.textContent = "";
-    logoutBtn.style.display = "none"; // <-- Add this line
-}
-
-// Auth logic
-signupBtn.onclick = () => {
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value;
-    if (!username || !password) {
-        authMsg.textContent = "Username and password required.";
-        return;
+    // Helpers
+    function getUsers() {
+        return JSON.parse(localStorage.getItem(usersKey) || "{}");
     }
-    let users = getUsers();
-    if (users[username]) {
-        authMsg.textContent = "Username already exists.";
-        return;
+    function getMessages() {
+        return JSON.parse(localStorage.getItem(messagesKey) || "[]");
     }
-    users[username] = password;
-    setUsers(users);
-    authMsg.textContent = "Account created! Please log in.";
-};
-
-loginBtn.onclick = () => {
-    const username = usernameInput.value.trim();
-    const password = passwordInput.value;
-    let users = getUsers();
-    if (users[username] && users[username] === password) {
-        currentUser = username;
-        localStorage.setItem("chat_current_user", currentUser);
-        showChat();
-    } else {
-        authMsg.textContent = "Invalid username or password.";
+    function setMessages(msgs) {
+        localStorage.setItem(messagesKey, JSON.stringify(msgs));
     }
-};
+    function getProfiles() {
+        return JSON.parse(localStorage.getItem("chat_profiles") || "{}");
+    }
+    function loadProfile(username) {
+        return getProfiles()[username] || {};
+    }
 
-logoutBtn.onclick = () => {
-    currentUser = null;
-    localStorage.removeItem("chat_current_user");
-    chatInput.value = "";
-    userList.innerHTML = "";
-    showAuth();
-};
+    // UI
+    function showChat() {
+        if (!currentUser) {
+            window.location.href = "login.html";
+            return;
+        }
+        currentUserSpan.textContent = currentUser;
+        updateSidebarProfile();
+        loadUserList();
+        loadMessages();
+    }
 
-// User list logic
-function loadUserList() {
-    let users = getUsers();
-    userList.innerHTML = "";
-    Object.keys(users).forEach(u => {
-        if (u !== currentUser) {
-            const opt = document.createElement("option");
-            opt.value = u;
-            opt.textContent = u;
-            userList.appendChild(opt);
+    // Logout
+    logoutBtn.onclick = function () {
+        localStorage.removeItem("chat_current_user");
+        window.location.href = "login.html";
+    };
+
+    // User list
+    function loadUserList() {
+        const users = getUsers();
+        userList.innerHTML = "";
+        Object.keys(users).forEach(u => {
+            if (u !== currentUser) {
+                const opt = document.createElement("option");
+                opt.value = u;
+                opt.textContent = u;
+                userList.appendChild(opt);
+            }
+        });
+
+        sendBtn.disabled = userList.options.length === 0;
+        if (userList.options.length > 0) {
+            userList.selectedIndex = 0;
+            loadMessages();
+        } else {
+            chatMessages.innerHTML = "<div style='color:#888;text-align:center;margin-top:40px;'>No other users to chat with.</div>";
+        }
+    }
+
+    // Send message
+    sendBtn.onclick = () => {
+        if (!currentUser) return;
+        const msg = chatInput.value.trim();
+        const toUser = userList.value;
+        if (!msg || !toUser) return;
+
+        const messages = getMessages();
+        messages.push({
+            from: currentUser,
+            to: toUser,
+            text: msg,
+            time: Date.now(),
+            profile: loadProfile(currentUser)
+        });
+        setMessages(messages);
+        chatInput.value = "";
+        loadMessages();
+    };
+
+    // Show messages
+    function loadMessages() {
+        const messages = getMessages();
+        chatMessages.innerHTML = "";
+        const selectedUser = userList.value;
+
+        messages
+            .filter(d =>
+                (d.from === currentUser && d.to === selectedUser) ||
+                (d.from === selectedUser && d.to === currentUser)
+            )
+            .slice(-50)
+            .forEach(d => {
+                const div = document.createElement("div");
+                let profile = d.profile || {};
+                if (d.from === currentUser) {
+                    div.className = "chat-message me";
+                    div.innerHTML = `
+                        <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;">
+                            <span>${d.text}</span>
+                            ${profile.pic ? `<img src="${profile.pic}" alt="Me" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid #007bff33;">` : ""}
+                        </div>
+                    `;
+                } else {
+                    let otherProfile = loadProfile(d.from);
+                    div.className = "chat-message other";
+                    div.innerHTML = `
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            ${otherProfile.pic ? `<img src="${otherProfile.pic}" alt="${d.from}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1.5px solid #007bff33;">` : ""}
+                            <span>${d.text}</span>
+                        </div>
+                    `;
+                }
+                chatMessages.appendChild(div);
+            });
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Sidebar
+    function updateSidebarProfile() {
+        const data = loadProfile(currentUser);
+        const defaultPic = "https://ui-avatars.com/api/?name=User&background=eee&color=aaa&size=70";
+        sidebarPic.innerHTML = `<img src="${data.pic ? data.pic : defaultPic}" alt="Profile Picture">`;
+        sidebarName.textContent = data.name ? data.name : currentUser;
+        sidebarAge.textContent = data.age ? `Age: ${data.age}` : '';
+        sidebarLocation.textContent = data.location ? `Location: ${data.location}` : '';
+    }
+
+    // Edit profile
+    editProfileBtn.onclick = function () {
+        window.location.href = "profile.html";
+    };
+
+    // User change
+    userList.addEventListener('change', () => {
+        sendBtn.disabled = !userList.value;
+        loadMessages();
+    });
+
+    // Enter key sends
+    chatInput.addEventListener('keydown', function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            sendBtn.click();
         }
     });
-}
 
-// Chat logic (private messages)
-sendBtn.onclick = () => {
-    const msg = chatInput.value.trim();
-    const toUser = userList.value;
-    if (!msg || !toUser) return;
-    let messages = getMessages();
-    messages.push({
-        from: currentUser,
-        to: toUser,
-        text: msg,
-        time: Date.now()
-    });
-    setMessages(messages);
-    chatInput.value = "";
-    loadMessages();
-};
+    // Load test data if empty
+    function initTestUsers() {
+        const users = getUsers();
+        const profiles = getProfiles();
 
-function loadMessages() {
-    let messages = getMessages();
-    chatMessages.innerHTML = "";
-    const selectedUser = userList.value;
-    messages
-        .filter(d =>
-            (d.from === currentUser && d.to === selectedUser) ||
-            (d.from === selectedUser && d.to === currentUser)
-        )
-        .slice(-50)
-        .forEach(d => {
-            const div = document.createElement("div");
-            if (d.from === currentUser) {
-                div.className = "chat-message me";
-                div.innerHTML = `<span>${d.text}</span>`;
-            } else {
-                div.className = "chat-message other";
-                div.innerHTML = `<span>${d.text}</span>`;
-            }
-            chatMessages.appendChild(div);
-        });
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
+        if (!users["alice"]) users["alice"] = "123";
+        if (!users["bob"]) users["bob"] = "123";
 
-// Update chat when user selection changes
-userList && userList.addEventListener('change', loadMessages);
+        if (!profiles["alice"]) profiles["alice"] = { name: "Alice", age: 22, location: "NY", pic: "" };
+        if (!profiles["bob"]) profiles["bob"] = { name: "Bob", age: 24, location: "LA", pic: "" };
 
-// Auto-login if user is already logged in
-window.onload = () => {
-    currentUser = localStorage.getItem("chat_current_user");
-    if (currentUser) {
-        showChat();
-    } else {
-        showAuth();
+        localStorage.setItem(usersKey, JSON.stringify(users));
+        localStorage.setItem("chat_profiles", JSON.stringify(profiles));
+
+        // Auto-login as Alice if not already
+        if (!currentUser) {
+            currentUser = "alice";
+            localStorage.setItem("chat_current_user", "alice");
+        }
     }
-};
+
+    initTestUsers();
+    showChat();
+});

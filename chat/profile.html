@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+    <link rel="stylesheet" href="chat-style.css">
+    <style>
+        .profile-edit-container {
+            max-width: 420px;
+            margin: 48px auto;
+            background: rgba(255,255,255,0.98);
+            padding: 32px 24px 18px 24px;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0, 123, 255, 0.10), 0 1.5px 8px rgba(0,0,0,0.07);
+            text-align: center;
+            animation: fadeInUp 1s;
+        }
+        .profile-edit-title {
+            color: #007bff;
+            margin-bottom: 18px;
+            letter-spacing: 1px;
+            font-size: 2rem;
+            font-weight: bold;
+            animation: fadeIn 1.2s;
+        }
+        .profile-fields label {
+            display: block;
+            margin-bottom: 14px;
+            font-size: 1rem;
+            text-align: left;
+            animation: fadeInUp 1s;
+        }
+        .profile-fields input[type="text"],
+        .profile-fields input[type="number"] {
+            width: 96%;
+            padding: 10px;
+            margin-top: 4px;
+            border: 1.5px solid #b3c6e0;
+            border-radius: 7px;
+            font-size: 1rem;
+            background: #f8fbff;
+            transition: border-color 0.3s;
+        }
+        .profile-fields input[type="text"]:focus,
+        .profile-fields input[type="number"]:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        .profile-fields input[type="file"] {
+            margin-top: 6px;
+        }
+        #profile-pic-preview img {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            border: 2px solid #007bff33;
+            box-shadow: 0 2px 8px #007bff22;
+            animation: popWord 0.5s;
+        }
+        #save-profile-btn {
+            background: linear-gradient(90deg, #007bff 60%, #0056b3 100%);
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            padding: 10px 28px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 12px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+            box-shadow: 0 2px 8px #007bff11;
+        }
+        #save-profile-btn:hover {
+            background: linear-gradient(90deg, #0056b3 60%, #007bff 100%);
+            transform: translateY(-2px) scale(1.03);
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 18px;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.2s;
+        }
+        .back-link:hover {
+            color: #0056b3;
+        }
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(40px);}
+            100% { opacity: 1; transform: translateY(0);}
+        }
+        @keyframes fadeIn {
+            from { opacity: 0;}
+            to { opacity: 1;}
+        }
+        @keyframes popWord {
+            0% { transform: scale(0.7);}
+            80% { transform: scale(1.1);}
+            100% { transform: scale(1);}
+        }
+        @media (max-width: 600px) {
+            .profile-edit-container {
+                padding: 12px 2vw 8px 2vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="profile-edit-container">
+        <div class="profile-edit-title">Edit Profile</div>
+        <form class="profile-fields" onsubmit="return false;">
+            <label>
+                Name:
+                <input type="text" id="profile-name" placeholder="Your name">
+            </label>
+            <label>
+                Age:
+                <input type="number" id="profile-age" min="1" max="120" placeholder="Age">
+            </label>
+            <label>
+                Location:
+                <input type="text" id="profile-location" placeholder="Location">
+            </label>
+            <label>
+                Profile Picture:
+                <input type="file" id="profile-pic" accept="image/*">
+            </label>
+            <div id="profile-pic-preview"></div>
+            <button id="save-profile-btn">Save Profile</button>
+        </form>
+        <a href="chat.html" class="back-link">← Back to Chat</a>
+    </div>
+    <script>
+        // Profile logic (same as before)
+        function getProfiles() {
+            return JSON.parse(localStorage.getItem("chat_profiles") || "{}");
+        }
+        function setProfiles(profiles) {
+            localStorage.setItem("chat_profiles", JSON.stringify(profiles));
+        }
+        function loadProfile(username) {
+            const profiles = getProfiles();
+            return profiles[username] || {};
+        }
+        function saveProfile(username, data) {
+            const profiles = getProfiles();
+            profiles[username] = data;
+            setProfiles(profiles);
+        }
+        // Get current user
+        const currentUser = localStorage.getItem("chat_current_user");
+        if (!currentUser) window.location.href = "chat.html";
+        const profileName = document.getElementById('profile-name');
+        const profileAge = document.getElementById('profile-age');
+        const profileLocation = document.getElementById('profile-location');
+        const profilePic = document.getElementById('profile-pic');
+        const profilePicPreview = document.getElementById('profile-pic-preview');
+        const saveProfileBtn = document.getElementById('save-profile-btn');
+        function loadProfileForm() {
+            const data = loadProfile(currentUser);
+            profileName.value = data.name || "";
+            profileAge.value = data.age || "";
+            profileLocation.value = data.location || "";
+            if (data.pic) {
+                profilePicPreview.innerHTML = `<img src="${data.pic}" alt="Profile Picture">`;
+            } else {
+                profilePicPreview.innerHTML = "";
+            }
+        }
+        profilePic.addEventListener('change', function() {
+            const file = profilePic.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                profilePicPreview.innerHTML = `<img src="${e.target.result}" alt="Profile Picture">`;
+            };
+            reader.readAsDataURL(file);
+        });
+        saveProfileBtn.onclick = function() {
+            let picData = "";
+            if (profilePicPreview.querySelector("img")) {
+                picData = profilePicPreview.querySelector("img").src;
+            }
+            saveProfile(currentUser, {
+                name: profileName.value,
+                age: profileAge.value,
+                location: profileLocation.value,
+                pic: picData
+            });
+            alert("Profile saved!");
+            window.location.href = "chat.html";
+        };
+        loadProfileForm();
+    </script>
+</body>
+</html>
