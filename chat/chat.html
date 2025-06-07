@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Chat</title>
+    <link rel="stylesheet" href="chat-style.css">
+</head>
+<body>
+    <div class="chat-container">
+        <div id="auth-section">
+            <h2 class="chat-title">Welcome to Chat Room</h2>
+            <input type="text" id="username" placeholder="Username">
+            <input type="password" id="password" placeholder="Password">
+            <div class="auth-btns">
+                <button id="signup-btn">Sign Up</button>
+                <button id="login-btn">Login</button>
+            </div>
+            <div id="auth-message"></div>
+        </div>
+        <div id="chat-section" style="display:none;">
+            <div class="chat-header">
+                <span><b>Logged in as:</b> <span id="current-user"></span></span>
+                <button id="logout-btn">Logout</button>
+            </div>
+            <div class="user-list-row">
+                <label for="user-list"><b>Chat with:</b></label>
+                <select id="user-list"></select>
+            </div>
+            <div id="chat-messages"></div>
+            <div class="chat-input-row">
+                <input type="text" id="chat-input" placeholder="Type a message...">
+                <button id="send-btn">Send</button>
+            </div>
+        </div>
+        <a href="../home.html" class="back-link">← Back to Home</a>
+    </div>
+    <script src="chat.js"></script>
+</body>
+</html>
